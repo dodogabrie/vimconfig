@@ -11,8 +11,8 @@ Plugin 'rstacruz/sparkup', {'rtp': 'vim/'}
 Plugin 'morhetz/gruvbox'
 Plugin 'SirVer/ultisnips'
 Plugin 'honza/vim-snippets'
-" Plugin 'ycm-core/YouCompleteMe'
-Plugin 'ervandew/supertab'
+"Plugin 'ycm-core/YouCompleteMe'
+"Plugin 'ervandew/supertab'
 Plugin 'lervag/vimtex'
 Plugin 'KeitaNakamura/tex-conceal.vim'
 " Vundle end
@@ -44,10 +44,6 @@ set conceallevel=1 		" |
 let g:tex_conceal='abdmg' 	" |-> Conceal tex
 hi Conceal ctermbg=none 	" |
 
-" make YCM compatible with UltiSnips (using supertab)
-let g:ycm_key_list_select_completion = ['<C-n>', '<Down>']
-let g:ycm_key_list_previous_completion = ['<C-p>', '<Up>']
-let g:SuperTabDefaultCompletionType = '<C-n>'
 " better key bindings for UltiSnipsExpandTrigger
 let g:UltiSnipsExpandTrigger = "<tab>"
 let g:UltiSnipsJumpForwardTrigger = "<tab>"
