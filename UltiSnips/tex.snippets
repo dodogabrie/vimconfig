@@ -5,8 +5,8 @@ texMathZoneIds = vim.eval('map('+str(texMathZones)+", 'hlID(v:val)')")
 texIgnoreMathZoneIds = vim.eval('map('+str(texIgnoreMathZones)+", 'hlID(v:val)')")
 ignore = texIgnoreMathZoneIds[0]
 Mathexp=['0','1','2','3','4','5','6','7','8','9',',','.','?','-','','\\','\}','^','_',"'"]
-greek = (['æ','”','ŋ','Ŋ','ø','Ø','ł','Ł','€','¢','ð','Ð','þ','ß'])
-greekexpand = ['alpha','beta','gamma','Gamma','omega','Omega','lambda','Lambda','epsilon','mathcal{E}','delta','Delta','varphi','sigma']
+greek = (['æ','”','ŋ','Ŋ','ø','Ø','ł','Ł','€','¢','ð','Ð','þ','ß','ŧ'])
+greekexpand = ['alpha','beta','gamma','Gamma','omega','Omega','lambda','Lambda','epsilon','mathcal{E}','delta','Delta','varphi','sigma','theta']
 def math():
 	synstackids = vim.eval("synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0))")
 	try:
@@ -699,7 +699,7 @@ snippet ò "boldsymbol" iA
 endsnippet
 
 context "math()"
-snippet '(['æ','”','ŋ','Ŋ','ø','Ø','ł','Ł','€','¢','ð','Ð','þ','ß'])' "greek letter" irA
+snippet '([æ”ŋŊøØłŁ€¢ðÐþßŧ])' "greek letter" irA
 \\`!p
 for i in range(len(greek)):
 	if greek[i] == match.group(1):
