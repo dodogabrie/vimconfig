@@ -17,31 +17,7 @@ def math():
 endglobal
 
 snippet template "Basic template" b
-\documentclass[a4paper]{article}
-
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage[dutch]{babel}
-\usepackage{amsmath, amssymb}
-
-
-% figure support
-\usepackage{import}
-\usepackage{xifthen}
-\pdfminorversion=7
-\usepackage{pdfpages}
-\usepackage{transparent}
-\newcommand{\incfig}[1]{%
-	\def\svgwidth{\columnwidth}
-	\import{./figures/}{#1.pdf_tex}
-}
-
-\pdfsuppresswarningpagegroup=1
-
-\begin{document}
-	$0
-\end{document}
+\input{/home/edoardo/Modelli/latex/template.tex}
 endsnippet
 
 snippet beg "begin{} / end{}" bA
@@ -284,34 +260,42 @@ snippet () "()" iA
 (${1:${VISUAL}}) $0
 endsnippet
 
+context "math()"
 snippet lr "left( right)" i
 \left(${1:${VISUAL}}\right)$0
 endsnippet
 
+context "math()"
 snippet lr( "left( right)" iA
 \left(${1:${VISUAL}}\right)$0
 endsnippet
 
+context "math()"
 snippet lr| "left| right|" iA
 \left|${1:${VISUAL}}\right|$0
 endsnippet
 
+context "math()"
 snippet lr{ "left\{ right\}" iA
 \left\\{${1:${VISUAL}}\right\\}$0
 endsnippet
 
+context "math()"
 snippet lrb "left\{ right\}" iA
 \left\\{${1:${VISUAL}}\right\\}$0
 endsnippet
 
+context "math()"
 snippet lr[ "left[ right]" iA
 \left[${1:${VISUAL}}\right]$0
 endsnippet
 
+context "math()"
 snippet lra "leftangle rightangle" iA
 \left<${1:${VISUAL}}\right>$0
 endsnippet
 
+context "math()"
 snippet lrin "leftin rightin" iA
 \left.${1:${VISUAL}}\right|_{$2}$0
 endsnippet
@@ -480,10 +464,6 @@ snippet mcal "mathcal" iA
 \mathcal{$1}$0
 endsnippet
 
-snippet lll "l" iA
-\ell
-endsnippet
-
 context "math()"
 snippet nabl "nabla" iA
 \nabla 
@@ -523,14 +503,26 @@ endsnippet
 
 context "math()"
 snippet int "integral" wA
-\int$0
+\int$0`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
 endsnippet
 
 
 priority 200
 context "math()"
 snippet '(?<!\\)(arcsin|arccos|arctan|arccot|arccsc|arcsec|pi|zeta)' "ln" rwA
-\\`!p snip.rv = match.group(1)`
+\\`!p snip.rv = match.group(1)``!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
 endsnippet
 
 
@@ -547,31 +539,16 @@ snippet <-> "leftrightarrow" iA
 endsnippet
 
 context "math()"
-snippet !> "mapsto" iA
-\mapsto 
-endsnippet
-
-context "math()"
 snippet invs "inverse" iA
 ^{-1}
 endsnippet
 
-context "math()"
-snippet compl "complement" iA
-^{c}
-endsnippet
-
-context "math()"
-snippet \\\ "setminus" iA
-\setminus
-endsnippet
-
 snippet >> ">>" iA
-\gg
+\gg 
 endsnippet
 
 snippet << "<<" iA
-\ll
+\ll 
 endsnippet
 
 
@@ -579,69 +556,9 @@ snippet ~~ "~" iA
 \sim 
 endsnippet
 
-context "math()"
-snippet set "set" wA
-\\{$1\\} $0
-endsnippet
-
-context "math()"
-snippet cc "subset" Ai
-\subset 
-endsnippet
-
 snippet notin "not in " iA
 \not\in 
 endsnippet
-
-context "math()"
-snippet inn "in " iA
-\in 
-endsnippet
-
-snippet NN "n" iA
-\N
-endsnippet
-
-snippet Nn "cap" iA
-\cap 
-endsnippet
-
-snippet UU "cup" iA
-\cup 
-endsnippet
-
-snippet uuu "bigcup" iA
-\bigcup_{${1:i \in ${2: I}}} $0
-endsnippet
-
-snippet nnn "bigcap" iA
-\bigcap_{${1:i \in ${2: I}}} $0
-endsnippet
-
-snippet OO "emptyset" iA
-\O
-endsnippet
-
-snippet RR "real" iA
-\R
-endsnippet
-
-snippet QQ "Q" iA
-\Q
-endsnippet
-
-snippet ZZ "Z" iA
-\Z
-endsnippet
-
-snippet <! "normal" iA
-\triangleleft 
-endsnippet
-
-snippet <> "hokje" iA
-\diamond 
-endsnippet
-
 
 context "math()"
 snippet '(?<!i)sts' "text subscript" irA
@@ -705,7 +622,7 @@ for i in range(len(greek)):
 	if greek[i] == match.group(1):
 			snip.rv = greekexpand[i]
 ``!p
-snip.rv = 'ciao'
+#snip.rv = 'ciao'
 if t[0] and t[0][0] not in Mathexp:
 	snip.rv = ' '
 else:
@@ -755,12 +672,25 @@ endsnippet
 
 context "math()"
 snippet || "parallel" iA
-\parallel
+\parallel`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+
 endsnippet
 
 context "math()"
 snippet ;; "approx" iA
-\approx
+\approx`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
 endsnippet
 
 snippet atm "atomo" i
@@ -771,5 +701,17 @@ context "math()"
 snippet atm "atomo" i
 {}^{${1:12}}\text{${2:C}}
 endsnippet
+
+context "math()"
+snippet prop "proportional" iA
+\propto`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
 
 # vim:ft=snippets
