@@ -111,7 +111,12 @@ snippet pac "Package" b
 endsnippet
 
 snippet => "implies" Ai
-\implies
+\implies`!p
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
 endsnippet
 
 snippet =< "implied by" Ai
@@ -484,15 +489,25 @@ snippet norm "norm" iA
 \|$1\|$0
 endsnippet
 
-priority 100
+#priority 100
 context "math()"
-snippet '(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp|tau|phi|nu|mu|rho|chi|psi|eta)' "ln" rwA
+snippet '(?<!\\)(tau|phi|nu|mu|rho|chi|psi|eta)' "ln" rwA
 \\`!p snip.rv = match.group(1)``!p
-if t[2] and t[2][0] not in Mathexp:
+if t[1] and t[1][0] not in Mathexp:
 	snip.rv = ' '
 else:
 	snip.rv = ''
-`$2
+`$1
+endsnippet
+
+context "math()"
+snippet '(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp|int)' "ln" rwA
+\\`!p snip.rv = match.group(1)``!p
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
 endsnippet
 
 priority 300
@@ -500,18 +515,6 @@ context "math()"
 snippet dint "integral" wA
 \int_\{${1:-\infty}}^{${2:\infty}} ${3:${VISUAL}} $0
 endsnippet
-
-context "math()"
-snippet int "integral" wA
-\int$0`!p
-#snip.rv = 'ciao'
-if t[0] and t[0][0] not in Mathexp:
-	snip.rv = ' '
-else:
-	snip.rv = ''
-`$0
-endsnippet
-
 
 priority 200
 context "math()"
@@ -556,10 +559,6 @@ snippet ~~ "~" iA
 \sim 
 endsnippet
 
-snippet notin "not in " iA
-\not\in 
-endsnippet
-
 context "math()"
 snippet '(?<!i)sts' "text subscript" irA
 _\text{$1} $0
@@ -575,13 +574,6 @@ snippet case "cases" wA
 \begin{cases}
 	$1
 \end{cases}
-endsnippet
-
-snippet bigfun "Big function" iA
-\begin{align*}
-	$1: $2 &\longrightarrow $3 \\\\
-	$4 &\longmapsto $1($4) = $0
-.\end{align*}
 endsnippet
 
 snippet cvec "column vector" iA
@@ -613,6 +605,11 @@ endsnippet
 context "math()"
 snippet ò "boldsymbol" iA
 \v{$1}$0
+endsnippet
+
+context "math()"
+snippet à "boldsymbol" iA
+\boldsymbol{$1}$0
 endsnippet
 
 context "math()"
@@ -657,6 +654,14 @@ $2
 $0
 endsnippet
 
+snippet quest "domanda enviroenment" bA
+\begin{quest}[${1:Name}]{quest:$1}
+$2
+\end{quest}
+$0
+endsnippet
+
+
 snippet fact "fact enviroenment" bA
 \begin{fact}[${1:Name}]{fact:$1}
 $2
@@ -679,7 +684,6 @@ if t[0] and t[0][0] not in Mathexp:
 else:
 	snip.rv = ''
 `$0
-
 endsnippet
 
 context "math()"
@@ -703,8 +707,30 @@ snippet atm "atomo" i
 endsnippet
 
 context "math()"
-snippet prop "proportional" iA
+snippet prp "proportional" iA
 \propto`!p
+#snip.rv = 'ciao'
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+context "math()"
+snippet up "go up" iA
+\nearrow`!p
+#snip.rv = 'ciao'
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+context "math()"
+snippet down "go down" iA
+\swarrow`!p
 #snip.rv = 'ciao'
 if t[0] and t[0][0] not in Mathexp:
 	snip.rv = ' '
