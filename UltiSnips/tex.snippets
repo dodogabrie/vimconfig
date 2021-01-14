@@ -1,0 +1,826 @@
+global !p
+texMathZones = ['texMathZone' + x for x in ['A', 'AS', 'B', 'BS', 'C', 'CS', 'D', 'DS', 'E', 'ES', 'F', 'FS', 'G', 'GS', 'H', 'HS', 'I', 'IS', 'J', 'JS', 'K', 'KS', 'L', 'LS', 'DS', 'V', 'W', 'X', 'Y', 'Z', 'AmsA', 'AmsB', 'AmsC', 'AmsD', 'AmsE', 'AmsF', 'AmsG', 'AmsAS', 'AmsBS', 'AmsCS', 'AmsDS', 'AmsES', 'AmsFS', 'AmsGS' ]]
+texIgnoreMathZones = ['texMathText']
+texMathZoneIds = vim.eval('map('+str(texMathZones)+", 'hlID(v:val)')")
+texIgnoreMathZoneIds = vim.eval('map('+str(texIgnoreMathZones)+", 'hlID(v:val)')")
+ignore = texIgnoreMathZoneIds[0]
+Mathexp=['0','1','2','3','4','5','6','7','8','9',',','.','?','-','','\\','\}','^','_',"'"]
+greek = (['æ','”','ŋ','Ŋ','ø','Ø','ł','Ł','€','¢','ð','Ð','þ','ß','ŧ'])
+greekexpand = ['alpha','beta','gamma','Gamma','omega','Omega','lambda','Lambda','epsilon','mathcal{E}','delta','Delta','varphi','sigma','theta']
+def math():
+	synstackids = vim.eval("synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0))")
+	try:
+		first = next(i for i in reversed(synstackids) if i in texIgnoreMathZoneIds or i in texMathZoneIds)
+		return first != ignore
+	except StopIteration:
+		return False
+endglobal
+
+snippet template "Basic template" b
+\documentclass[a4paper]{report}
+\usepackage{float}
+\usepackage{verbatim}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath}
+\usepackage{amsbsy,amssymb,amsfonts, amsthm, mhchem, multicol}
+\usepackage{graphicx}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{xcolor}
+\usepackage[hypertexnames=false]{hyperref}
+\usepackage{nameref}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+
+% figure support
+\usepackage{import}
+\usepackage{xifthen}
+\pdfminorversion=7
+\usepackage{pdfpages}
+\usepackage{transparent}
+\newcommand{\incfig}[1]{%
+	\def\svgwidth{\columnwidth}
+	\import{./figures/}{#1.pdf_tex}
+}
+\newcommand{\ffrac}[2]{\ensuremath{\frac{\displaystyle #1}{\displaystyle #2}}}
+\newcommand{\angstrom}{\mbox{\normalfont\AA}}
+\renewcommand{\[}{\begin{equation}}
+\renewcommand{\]}{\end{equation}}
+\renewcommand{\theequation}{\thesection.\arabic{equation}}
+\counterwithin*{equation}{section}
+\newcommand{\rom}[1]{\uppercase\expandafter{\romannumeral #1\relax}}
+% title setup
+\makeatother
+\def\@lez{}%
+\newcommand{\lez}[3]{
+	\ifthenelse{\isempty{#3}}{%
+		\def\@lez{Lezione #1}%
+	}{%
+		\def\@lez{Lezione #1: #3}%
+	}%
+	\section{\@lez}
+	\marginpar{\small\textsf{\mbox{#2}}}
+}
+\makeatletter
+\author{Edoardo Gabrielli}
+\title{$1}
+\begin{document}
+\maketitle 
+$2
+\end{document}
+endsnippet
+
+snippet beg "begin{} / end{}" bA
+\\begin{$1}
+	$0
+\\end{$1}
+endsnippet
+
+priority 100
+snippet ... "ldots" iA
+\ldots
+endsnippet
+
+snippet '(red|blue|green)' "coloredbox" rbA
+\\begin{`!p snip.rv = match.group(1)`box}{$1}
+	$0
+\\end{`!p snip.rv = match.group(1)`box}
+\\noindent
+endsnippet
+
+snippet '(thm|exmp|defn)' "def, theorem, example" rbA
+\\begin{`!p snip.rv = match.group(1)`}[$1]
+	$0
+\\end{`!p snip.rv = match.group(1)`}
+\\noindent
+endsnippet
+
+snippet table "Table environment" b
+\begin{table}[${1:htpb}]
+	\centering
+	\caption{${2:caption}}
+	\label{tab:${3:label}}
+	\begin{tabular}{${5:c}}
+	$0${5/((?<=.)c|l|r)|./(?1: & )/g}
+	\end{tabular}
+\end{table}
+endsnippet
+
+snippet fig "Figure environment" b
+\begin{figure}[${1:htpb}]
+	\centering
+	${2:\includegraphics[width=0.8\textwidth]{$3}}
+	\caption{${4:$3}}
+	\label{fig:${5:${3/\W+/-/g}}}
+\end{figure}
+endsnippet
+
+snippet texfig "Figure environment pdf-latex" b
+\begin{figure}[H]
+    \centering
+    \incfig{$1}
+    \caption{${2:$1}}}
+    \label{fig:$1}
+\end{figure}
+$0
+endsnippet
+
+snippet lezin "input lesson" bA
+\input{lezioni/lez_$1.tex}$0
+endsnippet
+
+snippet lezfile "input lesson" bA
+\lez{${1:Num.lezione}}{`!v strftime("%d-%m-%Y")`}{${2:Argomento}}
+endsnippet
+
+snippet sec "section" bA
+\section{${1:Sub.name}}%
+\label{sub:$1}
+$0
+endsnippet
+
+snippet sub "subsection" bA
+\subsection{${1:Sub.name}}%
+\label{sub:$1}
+$0
+endsnippet
+
+snippet ssub "subsubsection" bA
+\subsubsection{${1:Sub.name}}%
+\label{subsub:$1}
+$0
+endsnippet
+
+snippet par "paragraph" bA
+\paragraph{${1:Par.name}}%
+\label{par:$1}
+$0
+endsnippet
+
+context "math()"
+snippet par "paragraph" iA
+par
+endsnippet
+
+snippet enum "Enumerate" bA
+\begin{enumerate}
+	\item $0
+\end{enumerate}
+endsnippet
+
+snippet item "Itemize" bA
+\begin{itemize}
+	\item $0
+\end{itemize}
+endsnippet
+
+snippet desc "Description" b
+\begin{description}
+	\item[$1] $0
+\end{description}
+endsnippet
+
+snippet pac "Package" b
+\usepackage[${1:options}]{${2:package}}$0
+endsnippet
+
+snippet => "implies" Ai
+\implies`!p
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+snippet =< "implied by" Ai
+\impliedby
+endsnippet
+
+context "math()"
+snippet iff "iff" Ai
+\iff
+endsnippet
+
+snippet mk "Math" iA
+$${1}$`!p
+if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+` $0
+endsnippet
+
+context "math()"
+snippet mk "Math" iA
+mk
+endsnippet
+
+snippet dm "Math" wA
+\[
+	${1:${VISUAL}}
+.\] $0
+endsnippet
+
+snippet ali "Aligned" bA
+\[\begin{aligned}
+	${1:${VISUAL}}
+.\end{aligned}\]
+endsnippet
+
+context "math()"
+snippet // "Fraction" iA
+\\frac{$1}{$2}$0
+endsnippet
+
+snippet / "Fraction" i
+\\frac{${VISUAL}}{$1}$0
+endsnippet
+
+context "math()"
+snippet '((\d+)|(\d*)(\\)?([A-Za-z]+)((\^|_)(\{\d+\}|\d))*)/' "symbol frac" wrA
+\\frac{`!p snip.rv = match.group(1)`}{$1}$0
+endsnippet
+
+priority 1000
+context "math()"
+snippet '^.*\)/' "() frac" wrA
+`!p
+stripped = match.string[:-1]
+depth = 0
+i = len(stripped) - 1
+while True:
+	if stripped[i] == ')': depth += 1
+	if stripped[i] == '(': depth -= 1
+	if depth == 0: break;
+	i-=1
+snip.rv = stripped[0:i] + "\\frac{" + stripped[i+1:-1] + "}"
+`{$1}$0
+endsnippet
+
+context "math()"
+snippet '([A-Za-z])(\d)' "auto subscript" wrA
+`!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
+endsnippet
+
+context "math()"
+snippet '([A-Za-z])_(\d\d)' "auto subscript2" wrA
+`!p snip.rv = match.group(1)`_{`!p snip.rv = match.group(2)`}
+endsnippet
+
+context "math()"
+snippet '([\}])(\d)' "auto subscript" wrA
+`!p snip.rv = match.group(1)`_`!p snip.rv = match.group(2)`
+endsnippet
+
+context "math()"
+snippet '([\}])_(\d\d)' "auto subscript2" wrA
+`!p snip.rv = match.group(1)`_{`!p snip.rv = match.group(2)`}
+endsnippet
+
+snippet sympy "sympyblock " w
+sympy $1 sympy$0
+endsnippet
+
+priority 10000
+snippet 'sympy(.*)sympy' "sympy" wr
+`!p
+from sympy import *
+x, y, z, t = symbols('x y z t')
+k, m, n = symbols('k m n', integer=True)
+f, g, h = symbols('f g h', cls=Function)
+init_printing()
+snip.rv = eval('latex(' + match.group(1).replace('\\', '').replace('^', '**').replace('{', '(').replace('}', ')') + ')')
+`
+endsnippet
+
+priority 1000
+snippet math "mathematicablock" w
+math $1 math$0
+endsnippet
+
+priority 10000
+snippet 'math(.*)math' "math" wr
+`!p
+import subprocess
+code = match.group(1)
+code = 'ToString[' + code + ', TeXForm]'
+snip.rv = subprocess.check_output(['wolframscript', '-code', code])
+`
+endsnippet
+
+snippet == "equals" iA
+&= $1 \\\\
+endsnippet
+
+snippet != "equals" iA
+\neq 
+endsnippet
+
+context "math()"
+snippet ceil "ceil" iA
+\left\lceil $1 \right\rceil $0
+endsnippet
+
+context "math()"
+snippet floor "floor" iA
+\left\lfloor $1 \right\rfloor$0
+endsnippet
+
+snippet pmat "pmat" iA
+\begin{pmatrix} $1 \end{pmatrix} $0
+endsnippet
+
+snippet bmat "bmat" iA
+\begin{bmatrix} $1 \end{bmatrix} $0
+endsnippet
+
+snippet () "()" iA
+(${1:${VISUAL}}) $0
+endsnippet
+
+context "math()"
+snippet lr "left( right)" i
+\left(${1:${VISUAL}}\right)$0
+endsnippet
+
+context "math()"
+snippet lr( "left( right)" iA
+\left(${1:${VISUAL}}\right)$0
+endsnippet
+
+context "math()"
+snippet lr| "left| right|" iA
+\left|${1:${VISUAL}}\right|$0
+endsnippet
+
+context "math()"
+snippet lr{ "left\{ right\}" iA
+\left\\{${1:${VISUAL}}\right\\}$0
+endsnippet
+
+context "math()"
+snippet lrb "left\{ right\}" iA
+\left\\{${1:${VISUAL}}\right\\}$0
+endsnippet
+
+context "math()"
+snippet lr[ "left[ right]" iA
+\left[${1:${VISUAL}}\right]$0
+endsnippet
+
+context "math()"
+snippet lra "leftangle rightangle" iA
+\left<${1:${VISUAL}}\right>$0
+endsnippet
+
+context "math()"
+snippet lrin "leftin rightin" iA
+\left.${1:${VISUAL}}\right|_{$2}$0
+endsnippet
+
+context "math()"
+snippet lrc "left right conditioned" iA
+\left($1|$2\right)$0
+endsnippet
+
+context "math()"
+snippet conj "conjugate" iA
+\overline{$1}$0
+endsnippet
+
+snippet sum "sum" w
+\sum_{${1:n}}^{${2:\infty}} ${3:a_n z^n}
+endsnippet
+
+snippet taylor "taylor" w
+\sum_{${1:k}=${2:0}}^{${3:\infty}} ${4:c_$1} (x-a)^$1 $0
+endsnippet
+
+snippet lim "limit" w
+\lim_{${1:n} \to ${2:\infty}} 
+endsnippet
+
+snippet limsup "limsup" w
+\limsup_{${1:n} \to ${2:\infty}} 
+endsnippet
+
+snippet prod "product" w
+\prod_{${1:n=${2:1}}}^{${3:\infty}} ${4:${VISUAL}} $0
+endsnippet
+
+context "math()"
+snippet part "partial d/dx" i
+\frac{\partial ${1:V}}{\partial ${2:x}} $0
+endsnippet
+
+context "math()"
+snippet ddt "d/dx" iA
+\frac{\text{d} ${1:V}}{\text{d} ${2:x}} $0
+endsnippet
+
+context "math()"
+snippet ddp "partial d/dx" iA
+\partial_{$1}$0
+endsnippet
+
+context "math()"
+snippet sq "\sqrt{}" iA
+\sqrt{${1:${VISUAL}}} $0
+endsnippet
+
+context "math()"
+snippet sr "^2" iA
+^2
+endsnippet
+
+context "math()"
+snippet cb "^3" iA
+^3
+endsnippet
+
+context "math()"
+snippet ^^ "to the ... power" iA
+^{$1}$0
+endsnippet
+
+context "math()"
+snippet __ "subscript" iA
+_{$1}$0
+endsnippet
+
+snippet ooo "\infty" iA
+\infty
+endsnippet
+
+snippet rij "mrij" i
+(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}}$0
+endsnippet
+
+snippet <= "leq" iA
+\le 
+endsnippet
+
+snippet >= "geq" iA
+\ge 
+endsnippet
+
+snippet plot "Plot" w
+\begin{figure}[$1]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+			xmin= ${2:-10}, xmax= ${3:10},
+			ymin= ${4:-10}, ymax = ${5:10},
+			axis lines = middle,
+			xlabel={$6},
+			ylabel={$7},
+			xtick={0},
+			ytick={0},
+			xticklabel={$$},
+			yticklabel={$$},
+		]
+			\addplot[domain=$2+9/10*$2:$3+9/10*$3, samples=${8:100}]{$9};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{$10}
+	\label{$10}}
+\end{figure}
+endsnippet
+
+context "math()"
+snippet mcal "mathcal" iA
+\mathcal{$1}$0
+endsnippet
+
+context "math()"
+snippet nabl "nabla" iA
+\nabla 
+endsnippet
+
+context "math()"
+snippet xx "cross" iA
+\times 
+endsnippet
+
+priority 100
+snippet ** "cdot" iA
+\cdot 
+endsnippet
+
+context "math()"
+snippet norm "norm" iA
+\|$1\|$0
+endsnippet
+
+#priority 100
+context "math()"
+snippet '(?<!\\)(tau|phi|nu|mu|rho|chi|psi|eta)' "ln" rwA
+\\`!p snip.rv = match.group(1)``!p
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+context "math()"
+snippet '(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp|int)' "ln" rwA
+\\`!p snip.rv = match.group(1)``!p
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+priority 300
+context "math()"
+snippet dint "integral" wA
+\int_\{${1:-\infty}}^{${2:\infty}} ${3:${VISUAL}} $0
+endsnippet
+
+priority 200
+context "math()"
+snippet '(?<!\\)(arcsin|arccos|arctan|arccot|arccsc|arcsec|pi|zeta)' "ln" rwA
+\\`!p snip.rv = match.group(1)``!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+
+priority 100
+context "math()"
+snippet -> "to" iA
+\to 
+endsnippet
+
+priority 200
+context "math()"
+snippet <-> "leftrightarrow" iA
+\leftrightarrow
+endsnippet
+
+context "math()"
+snippet invs "inverse" iA
+^{-1}
+endsnippet
+
+snippet >> ">>" iA
+\gg 
+endsnippet
+
+snippet << "<<" iA
+\ll 
+endsnippet
+
+
+snippet ~~ "~" iA
+\sim 
+endsnippet
+
+context "math()"
+snippet '(?<!i)sts' "text subscript" irA
+_\text{$1} $0
+endsnippet
+
+context "math()"
+snippet tt "text" iA
+\text{$1}$0
+endsnippet
+
+context "math()"
+snippet case "cases" wA
+\begin{cases}
+	$1
+\end{cases}
+endsnippet
+
+snippet cvec "column vector" iA
+\begin{pmatrix} ${1:x}_${2:1}\\\\ \vdots\\\\ $1_${2:n} \end{pmatrix}
+endsnippet
+
+snippet vec "inline vector" i
+$\v{$1}$$0
+endsnippet
+
+priority 10
+context "math()"
+snippet "bar" "bar" ri
+\overline{$1}$0
+endsnippet
+
+priority 10
+context "math()"
+snippet "hat" "hat" ri
+\hat{$1}$0
+endsnippet
+
+priority 10
+context "math()"
+snippet til "hat" i
+\tilde{$1}$0
+endsnippet
+
+context "math()"
+snippet ò "boldsymbol" iA
+\v{$1}$0
+endsnippet
+
+context "math()"
+snippet à "boldsymbol" iA
+\boldsymbol{$1}$0
+endsnippet
+
+context "math()"
+snippet '([æ”ŋŊøØłŁ€¢ðÐþßŧ])' "greek letter" irA
+\\`!p
+for i in range(len(greek)):
+	if greek[i] == match.group(1):
+			snip.rv = greekexpand[i]
+``!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+context "math()"
+snippet ħ "hbar" iA
+\hbar 
+endsnippet
+
+context "math()"
+snippet bra "bra" w
+\bra{$1}$0
+endsnippet
+
+context "math()"
+snippet ket "ket" i
+\ket{$1}$0
+endsnippet
+
+context "math()"
+snippet bracket "braket" i
+\bracket{$1}{$2}$0
+endsnippet
+
+snippet defn "definition enviroenment" bA
+\begin{defn}[${1:Name}]{defn:$1}
+$2
+\end{defn}
+$0
+endsnippet
+
+snippet quest "domanda enviroenment" bA
+\begin{quest}[${1:Name}]{quest:$1}
+$2
+\end{quest}
+$0
+endsnippet
+
+
+snippet fact "fact enviroenment" bA
+\begin{fact}[${1:Name}]{fact:$1}
+$2
+\end{fact}
+$0
+endsnippet
+
+snippet foo "fact enviroenment" iA
+
+\footnote{${1:${VISUAL}}}
+$0
+endsnippet
+
+context "math()"
+snippet || "parallel" iA
+\parallel`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+context "math()"
+snippet ;; "approx" iA
+\approx`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+snippet atm "atomo" i
+${}^{${1:12}}$${2:C}
+endsnippet
+
+context "math()"
+snippet atm "atomo" i
+{}^{${1:12}}\text{${2:C}}
+endsnippet
+
+context "math()"
+snippet prp "proportional" iA
+\propto`!p
+#snip.rv = 'ciao'
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+context "math()"
+snippet up "go up" iw
+\nearrow`!p
+#snip.rv = 'ciao'
+if t[1] and t[1][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$1
+endsnippet
+
+context "math()"
+snippet down "go down" iw
+\swarrow`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+snippet col "columns for beamer" b
+\begin{columns}
+	\begin{column}{0.5\textwidth}
+		$1
+        \end{column}
+	\begin{column}{0.4\textwidth}
+		$2
+	\end{column}
+\end{columns}
+$0
+endsnippet
+
+snippet inkfig "inkscape figures" b
+\begin{figure}[H]
+    \centering
+    \incfig{$1}
+    \caption{$2}
+    \label{fig:$1}
+\end{figure}
+$0
+endsnippet
+
+context "math()"
+snippet UU "union" iA
+\bigcup_{$1}^{$2}`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+context "math()"
+snippet vec "boldsymbol" iA
+\vect{$1}`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+snippet d. "derivate" i
+\\dot{${VISUAL}}$0
+endsnippet
+
+snippet dd. "derivate" i
+\\ddot{${VISUAL}}$0
+endsnippet
+
+snippet .d "derivate" i
+\\dot{$1}$0
+endsnippet
+
+snippet .dd "derivate" i
+\\ddot{$1}$0
+endsnippet
+
+# vim:ft=snippets

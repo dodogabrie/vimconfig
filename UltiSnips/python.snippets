@@ -1,0 +1,32 @@
+snippet def "function definition" b
+def ${1:func}(${2:x}):
+	$3
+	return $4
+endsnippet
+snippet () "autoinside" iA
+($1)
+endsnippet
+
+snippet '' "auto string" iA
+'$1'$0
+endsnippet
+
+snippet doc "Documentation for something" iw
+"""$1
+"""$0
+endsnippet
+
+snippet main "if name == main" iw
+if __name__=="__main__":
+    $0
+endsnippet
+
+snippet print "print" iw
+print($1)$0
+endsnippet
+
+snippet " "auto string 1" i
+"$1"$0
+endsnippet
+
+
