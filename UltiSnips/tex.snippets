@@ -1,29 +1,80 @@
 global !p
-texMathZones = ['texMathZone' + x for x in ['A', 'AS', 'B', 'BS', 'C', 'CS', 'D', 'DS', 'E', 'ES', 'F', 'FS', 'G', 'GS', 'H', 'HS', 'I', 'IS', 'J', 'JS', 'K', 'KS', 'L', 'LS', 'DS', 'V', 'W', 'X', 'Y', 'Z', 'AmsA', 'AmsB', 'AmsC', 'AmsD', 'AmsE', 'AmsF', 'AmsG', 'AmsAS', 'AmsBS', 'AmsCS', 'AmsDS', 'AmsES', 'AmsFS', 'AmsGS' ]]
-texIgnoreMathZones = ['texMathText']
-texMathZoneIds = vim.eval('map('+str(texMathZones)+", 'hlID(v:val)')")
-texIgnoreMathZoneIds = vim.eval('map('+str(texIgnoreMathZones)+", 'hlID(v:val)')")
-ignore = texIgnoreMathZoneIds[0]
+#texMathZones diventa:
+#texMathZones = ['texMathZone' + x for x in ['', 'X', 'XX', 'Env', 'EnvStarred', 'Ensured']]
 Mathexp=['0','1','2','3','4','5','6','7','8','9',',','.','?','-','','\\','\}','^','_',"'"]
 greek = (['æ','”','ŋ','Ŋ','ø','Ø','ł','Ł','€','¢','ð','Ð','þ','ß','ŧ'])
 greekexpand = ['alpha','beta','gamma','Gamma','omega','Omega','lambda','Lambda','epsilon','mathcal{E}','delta','Delta','varphi','sigma','theta']
 def math():
-	synstackids = vim.eval("synstack(line('.'), col('.') - (col('.')>=2 ? 1 : 0))")
-	try:
-		first = next(i for i in reversed(synstackids) if i in texIgnoreMathZoneIds or i in texMathZoneIds)
-		return first != ignore
-	except StopIteration:
-		return False
+    return vim.eval('vimtex#syntax#in_mathzone()') == '1'
+
+def create_matrix(snip):
+        matrix_str = (snip.buffer[snip.line].split('mat')[0]+'matrix').strip()
+
+        rows = 'x'.join(snip.buffer[snip.line].split("x", 2)[:-1])
+        cols = 'x'.join(snip.buffer[snip.line].split("x", 2)[-1:])
+
+        int_val = lambda string: int(''.join(s for s in string if s.isdigit()))
+
+        rows = int_val(rows)
+        cols = int_val(cols)
+
+        offset = cols + 1
+        old_spacing = snip.buffer[snip.line][:snip.buffer[snip.line].rfind('\t') + 1]
+
+        snip.buffer[snip.line] = ''
+
+        final_str = old_spacing + "\\begin{"+matrix_str+"}\n"
+
+        for i in range(rows):
+                final_str += old_spacing + '\t'
+                final_str += " & ".join(['$' + str(i * cols + j + offset) for j in range(cols)])
+
+                final_str += " \\\\\\\n"
+
+        final_str += old_spacing + "\\end{"+matrix_str+"}\n$0"
+
+        snip.expand_anon(final_str)
+
 endglobal
 
 snippet template "Basic template" b
 \input{/home/edoardo/Modelli/latex/template.tex}
 endsnippet
 
-snippet beg "begin{} / end{}" bA
+snippet beg "begin{} / end{}" b
 \\begin{$1}
 	$0
 \\end{$1}
+endsnippet
+
+snippet thm "theorem" bA
+\\begin{thm}[$1]
+	$0
+\\end{thm}
+\\noindent
+endsnippet
+
+snippet exmp "example" bA
+\\begin{exmp}[$1]
+	$0
+\\end{exmp}
+\\noindent
+endsnippet
+
+snippet ex "example" b
+\\begin{ex}[$1]
+	$0
+\\end{ex}
+\\noindent
+endsnippet
+
+
+
+snippet def "definition" bA
+\\begin{defn}[$1]
+	$0
+\\end{defn}
+\\noindent
 endsnippet
 
 priority 100
@@ -59,42 +110,62 @@ snippet lezfile "input lesson" bA
 \lez{${1:Num.lezione}}{`!v strftime("%d-%m-%Y")`}{${2:Argomento}}
 endsnippet
 
-snippet sec "section" bA
+snippet sec "section" b
 \section{${1:Sub.name}}%
 \label{sub:$1}
 $0
 endsnippet
 
-snippet sub "subsection" bA
+snippet sub "subsection" b
 \subsection{${1:Sub.name}}%
 \label{sub:$1}
 $0
 endsnippet
 
-snippet ssub "subsubsection" bA
+snippet ssub "subsubsection" b
 \subsubsection{${1:Sub.name}}%
 \label{subsub:$1}
 $0
 endsnippet
 
-snippet par "paragraph" bA
+snippet par "paragraph" b
 \paragraph{${1:Par.name}}%
 \label{par:$1}
 $0
 endsnippet
 
-context "math()"
-snippet par "paragraph" iA
-par
+snippet frame "beamer frame" b
+\\begin{frame}
+\\frametitle{${1:Title}}
+\\framesubtitle{${2:Subtitle}}
+$0
+\\end{frame}
 endsnippet
 
-snippet enum "Enumerate" bA
+snippet cols "beamer two columns" b
+\\begin{columns}
+\\begin{column}{0.5\textwidth}
+$1
+\\end{column}
+\\begin{column}{0.5\textwidth}
+$0
+\\end{column}
+\\end{columns}
+endsnippet
+
+snippet block "beamer block" A
+\\begin{block}{${1:Title}}
+$0
+\\end{block}
+endsnippet
+
+snippet enum "Enumerate" b
 \begin{enumerate}
 	\item $0
 \end{enumerate}
 endsnippet
 
-snippet item "Itemize" bA
+snippet item "Itemize" A
 \begin{itemize}
 	\item $0
 \end{itemize}
@@ -253,9 +324,9 @@ snippet floor "floor" iA
 \left\lfloor $1 \right\rfloor$0
 endsnippet
 
-snippet pmat "pmat" iA
-\begin{pmatrix} $1 \end{pmatrix} $0
-endsnippet
+#snippet pmat "pmat" iA
+#\begin{pmatrix} $1 \end{pmatrix} $0
+#endsnippet
 
 snippet bmat "bmat" iA
 \begin{bmatrix} $1 \end{bmatrix} $0
@@ -337,11 +408,11 @@ endsnippet
 
 context "math()"
 snippet ddt "d/dx" iA
-\frac{\text{d} ${1:V}}{\text{d} ${2:x}} $0
+\frac{\text{d} ${1:V}}{\text{d} ${2:t}} $0
 endsnippet
 
 context "math()"
-snippet sq "\sqrt{}" iA
+snippet sq "\sqrt{}" i
 \sqrt{${1:${VISUAL}}} $0
 endsnippet
 
@@ -361,7 +432,7 @@ snippet ^^ "to the ... power" iA
 endsnippet
 
 context "math()"
-snippet __ "subscript" iA
+snippet -- "subscript" iA
 _{$1}$0
 endsnippet
 
@@ -501,7 +572,7 @@ else:
 endsnippet
 
 context "math()"
-snippet '(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp|int)' "ln" rwA
+snippet '(?<!\\)(sin|cos|arccot|cot|csc|ln|log|exp|star|perp)' "ln" rwA
 \\`!p snip.rv = match.group(1)``!p
 if t[1] and t[1][0] not in Mathexp:
 	snip.rv = ' '
@@ -512,13 +583,19 @@ endsnippet
 
 priority 300
 context "math()"
-snippet dint "integral" wA
-\int_\{${1:-\infty}}^{${2:\infty}} ${3:${VISUAL}} $0
+snippet dint "integral with up and down" w
+\\int_\{${1:-\infty}}^{${2:\infty}} ${3:${VISUAL}} $0
+endsnippet
+
+priority 300
+context "math()"
+snippet int "integral" w
+\\int
 endsnippet
 
 priority 200
 context "math()"
-snippet '(?<!\\)(arcsin|arccos|arctan|arccot|arccsc|arcsec|pi|zeta)' "ln" rwA
+snippet '(?<!\\)(tan|arcsin|arccos|arctan|arccot|arccsc|arcsec|pi|zeta)' "ln" rwA
 \\`!p snip.rv = match.group(1)``!p
 #snip.rv = 'ciao'
 if t[0] and t[0][0] not in Mathexp:
@@ -577,10 +654,10 @@ snippet case "cases" wA
 endsnippet
 
 snippet cvec "column vector" iA
-\begin{pmatrix} ${1:x}_${2:1}\\\\ \vdots\\\\ $1_${2:n} \end{pmatrix}
+\begin{pmatrix} $1 \\\\ $2 \end{pmatrix}
 endsnippet
 
-snippet vec "inline vector" i
+snippet vv "inline vector" i
 $\v{$1}$$0
 endsnippet
 
@@ -603,7 +680,7 @@ snippet til "hat" i
 endsnippet
 
 context "math()"
-snippet ò "boldsymbol" iA
+snippet vv "boldsymbol" iA
 \v{$1}$0
 endsnippet
 
@@ -739,5 +816,93 @@ else:
 `$0
 endsnippet
 
+
+snippet dcases "dcases equations" iA
+\\[
+\\begin{dcases}
+$0
+\\end{dcases}
+\\]
+endsnippet
+
+context "math()"
+snippet .d "dottet" iA
+\\dot{$1}$0
+endsnippet 
+
+context "math()"
+snippet ..d "dottet" iA
+\\ddot{$1}$0
+endsnippet 
+
+snippet frame "beamer frame" bA
+\\begin{frame}
+\\frametitle{${1:title}}
+\\framesubtitle{${2:subtitle}}
+$0
+\\end{frame}
+endsnippet
+
+snippet block "beamer block" bA
+\\begin{block}{${1:title}}
+$0
+\\end{block}
+endsnippet
+
+context "math()"
+snippet '(RR|NN|II|ZZ|QQ)' "Insiemi" rA
+\\mathbb{`!p snip.rv = match.group(1)[0]`}$0
+endsnippet
+
+
+pre_expand "create_matrix(snip)"
+snippet "(small|[bBpvV])?mat(rix)? (\d+) x (\d+)" "Generate (small|[bBpvV])?matrix of *rows* by *columns*" rA
+endsnippet
+
+context "math()"
+snippet q "quad" w
+\\quad`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+context "math()"
+snippet qq "quad" w
+\\qquad`!p
+#snip.rv = 'ciao'
+if t[0] and t[0][0] not in Mathexp:
+	snip.rv = ' '
+else:
+	snip.rv = ''
+`$0
+endsnippet
+
+snippet side "sidenote" i
+\\sidenote{\\scriptsize $1}$0
+endsnippet
+
+snippet marink "inkscape figure on the side" b
+\\marginpar{
+        \\captionsetup{type=figure}
+        \\incfig{$1}
+        \\caption{\\scriptsize $2}
+	\\label{fig:$1}
+    }
+$0
+endsnippet 
+
+snippet marfig "figure on the side" bA
+\marginpar{
+        \\captionsetup{type=figure}
+            \\includegraphics{$1}
+        \\caption{\scriptsize $2}
+	\\label{fig:$1}
+    }
+$0
+endsnippet 
 
 # vim:ft=snippets
