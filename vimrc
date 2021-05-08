@@ -50,7 +50,7 @@ let g:UltiSnipsJumpForwardTrigger = "<tab>"
 let g:UltiSnipsJumpBackwardTrigger = "<s-tab>"
 " latex enviroenment
 let g:tex_flavor='latex'
-let g:vimtex_view_method='zathura'
+"let g:vimtex_view_method='zathura'
 let g:vimtex_quickfix_mode=0
 let g:UltiSnipsSnippetsDir = "~/.vim/UltiSnips"
 
