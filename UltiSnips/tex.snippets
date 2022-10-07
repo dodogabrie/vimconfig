@@ -6,44 +6,67 @@ greek = (['æ','”','ŋ','Ŋ','ø','Ø','ł','Ł','€','¢','ð','Ð','þ','ß
 greekexpand = ['alpha','beta','gamma','Gamma','omega','Omega','lambda','Lambda','epsilon','mathcal{E}','delta','Delta','varphi','sigma','theta']
 def math():
     return vim.eval('vimtex#syntax#in_mathzone()') == '1'
-
 def create_matrix(snip):
         matrix_str = (snip.buffer[snip.line].split('mat')[0]+'matrix').strip()
-
         rows = 'x'.join(snip.buffer[snip.line].split("x", 2)[:-1])
         cols = 'x'.join(snip.buffer[snip.line].split("x", 2)[-1:])
-
         int_val = lambda string: int(''.join(s for s in string if s.isdigit()))
-
         rows = int_val(rows)
         cols = int_val(cols)
-
         offset = cols + 1
         old_spacing = snip.buffer[snip.line][:snip.buffer[snip.line].rfind('\t') + 1]
-
         snip.buffer[snip.line] = ''
-
         final_str = old_spacing + "\\begin{"+matrix_str+"}\n"
-
         for i in range(rows):
                 final_str += old_spacing + '\t'
                 final_str += " & ".join(['$' + str(i * cols + j + offset) for j in range(cols)])
-
                 final_str += " \\\\\\\n"
-
         final_str += old_spacing + "\\end{"+matrix_str+"}\n$0"
-
         snip.expand_anon(final_str)
 
 endglobal
 
-snippet template "Basic template" b
-\input{/home/edoardo/Modelli/latex/template.tex}
+
+snippet newdoc "Basic template" bA
+\documentclass[11pt]{article}
+
+\usepackage{sectsty}
+\usepackage{graphicx}
+
+% Margins
+\topmargin=-0.45in
+\evensidemargin=0in
+\oddsidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+\headsep=0.25in
+
+\title{ Title}
+\author{ Author }
+\date{\today}
+
+\begin{document}
+\maketitle	
+\pagebreak
+
+% Optional TOC
+% \tableofcontents
+% \pagebreak
+
+%--Paper--
+
+\section{Section 1}
+Lorem Ipsum \\
+
+%--/Paper--
+
+\end{document}
 endsnippet
 
 snippet beg "begin{} / end{}" b
 \\begin{$1}
 	$0
+	puppa
 \\end{$1}
 endsnippet
 
@@ -67,8 +90,6 @@ snippet ex "example" b
 \\end{ex}
 \\noindent
 endsnippet
-
-
 
 snippet def "definition" bA
 \\begin{defn}[$1]
@@ -100,14 +121,6 @@ snippet fig "Figure environment" b
 	\caption{${4:$3}}
 	\label{fig:${5:${3/\W+/-/g}}}
 \end{figure}
-endsnippet
-
-snippet lezin "input lesson" bA
-\input{lezioni/lez_$1.tex}$0
-endsnippet
-
-snippet lezfile "input lesson" bA
-\lez{${1:Num.lezione}}{`!v strftime("%d-%m-%Y")`}{${2:Argomento}}
 endsnippet
 
 snippet sec "section" b
@@ -199,21 +212,11 @@ snippet iff "iff" Ai
 \iff
 endsnippet
 
-snippet mk "Math" iA
-$${1}$`!p
-if t[2] and t[2][0] not in [',', '.', '?', '-', ' ']:
-	snip.rv = ' '
-else:
-	snip.rv = ''
-` $0
+snippet mk "Math env" wA
+$${1}$ $0
 endsnippet
 
-context "math()"
-snippet mk "Math" iA
-mk
-endsnippet
-
-snippet dm "Math" wA
+snippet dm "Math un numbered" wA
 \[
 	${1:${VISUAL}}
 .\] $0
